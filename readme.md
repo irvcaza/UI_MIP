@@ -33,3 +33,8 @@ una imagen autenticada con
 
 Con esto podemos lanzar imágenes de la siguiente manera 
 ```docker run -it -v $PWD/scripts:/home/jovyan/scripts -v $PWD/data:/home/jovyan/data -p 8888:8888 --name jupyter_we_lic jupyter:we_licence start.sh jupyter lab```
+
+### Aplicativo
+
+Para lanzar el aplicativo simplemente debemos hacer 
+``` docker-compose -f .\docker-compose_API.yml up ```

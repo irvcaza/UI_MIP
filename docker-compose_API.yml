@@ -1,0 +1,22 @@
+## Archivo docker compose para lanzar interfaz de usuario para hacer simulaciones con la matriz insumo-producto
+
+# Version docker compose.
+version: "3.8"
+services:
+  # Servicio de backend como API REST para solicitar la información
+  backend:
+    build: 
+      context: ./API
+    image: sumulador_mip:alfa
+    volumes:
+      - "./API/app:/app"
+    ports:
+      - "80:80" # El puerto 8000  es por defecto en FastAPI, se peude cambiar por otro para evitar colisiones. Se puede omitir esta linea para que solo componentes internos accedan a la red 
+    labels: 
+      - responsable:"Irving Cabrera"
+      - proyecto:"Interfaz  Usuario MIP"
+      - descripcion:"Este es un contenedor con el backend en forma de API REST para la simulacion de la matriz insumo-producto"
+      - fecha.solicitud:"2021/04/07"
+      - fecha.conclusion:"2021/06/07"
+    command: ["--host", "0.0.0.0", "--port", "80", "--reload", "--reload-dir=/app ", "app.main:app"]
+    
