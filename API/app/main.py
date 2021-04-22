@@ -3,6 +3,7 @@ from fastapi import FastAPI, Query
 import app.simulador_MIP as simulador_MIP
 import numpy as np
 import networkx as nx
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(
     title="Simulador MIP",
@@ -13,6 +14,18 @@ app = FastAPI(
 
 simulador = simulador_MIP.Simulador_MIP("/app/mip_d_pb_pxp__4_22_42_202_133.xlsx","/app/mip_t_pb_pxp__4_22_45_202_133.xlsx")
 
+# ToDo: Hacer estos filtros mas estrictos para permitir solo orígenes deseados 
+origins = [
+    "*"
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 def deserializa_lista(lista_cambios):
     lista = [[int(x) for x in cambio.split(",")] for cambio in lista_cambios]
