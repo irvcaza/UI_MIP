@@ -1,4 +1,4 @@
-# Migración de interfaz de usuario parara matiz insumo producto
+# Migración de interfaz de usuario para matiz insumo producto
 
 En este repositorio se preserva información acerca de la migración de la herramienta de interfaz de usuario para 
 simulaciones de la matriz insumo producto. Inicialmente desarrollado en cuaderno de Wolfram Mathematica se busca 
@@ -10,15 +10,22 @@ Esta clase es usada junto con FastAPI para crear un API REST.
 
 ## Instrucciones
 
+### Aplicativo
+
+Para lanzar el aplicativo simplemente debemos hacer 
+``` docker-compose -f .\docker-compose_API.yml up -d```
+
+La documentación de la API puede encontrarse en ```http://localhost/docs```
+
 ### Traducción
-Pasos para crear un entorno de desarrollo que permita ejecución tanto de Wolfram language como de Python.
+Si, en cambio se quiere crear un entorno de desarrollo que permita ejecución tanto de Wolfram language como de Python.
 - [Docker](https://www.docker.com) instalado 
 - Cuenta de [Wolfram](https://account.wolfram.com/login/oauth2/sign-in)
 - Descargar archivo de [Wolfram Engine 12.2.0](https://www.wolfram.com/engine/) para linux y colocarlo en el mismo 
 directorio del Dockerfile
   - En caso de que se tenga otra version de Wolfram Engine o Distinto nombre de archivo habrá que cambiar 
   el Dockerfile en la linea 21
-- Construir la imagen con `docker build -t jupyter:we .`
+- Construir la imagen con '`docker build -t jupyter:we .`' (El punto al final es muy importante)
 - lanzar el contenedor con 
 ``` docker run -it -v $PWD/scripts:/home/jovyan/scripts -v $PWD/data:/home/jovyan/data --name jupyter_we -p 8888:8888 jupyter:we ```
 - Buscar en el log del contenedor lanzado una dirección del tipo http://127.0.0.1:8888/?token=644ac7...
@@ -33,8 +40,3 @@ una imagen autenticada con
 
 Con esto podemos lanzar imágenes de la siguiente manera 
 ```docker run -it -v $PWD/scripts:/home/jovyan/scripts -v $PWD/data:/home/jovyan/data -p 8888:8888 --name jupyter_we_lic jupyter:we_licence start.sh jupyter lab```
-
-### Aplicativo
-
-Para lanzar el aplicativo simplemente debemos hacer 
-``` docker-compose -f .\docker-compose_API.yml up ```
