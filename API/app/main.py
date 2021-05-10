@@ -30,7 +30,7 @@ app.add_middleware(
 def deserializa_lista(lista_cambios):
     lista = [[int(x) for x in cambio.split(",")] for cambio in lista_cambios]
     return lista
-
+# ToDo: Agregar esquema de respuesta en todas las funciones 
 @app.get("/simula/tablas")
 async def simula_tablas(
         cambio:List[str] = Query(...,
@@ -84,7 +84,7 @@ def simula_red(inicial:int,
 
 @app.get("/datos/etiquetas")
 def etiquetas():
-    resultado = {i:x for i,x in enumerate(list(simulador.etiSCIAN))}
+    resultado = [{"id":i,"desc":x} for i,x in enumerate(list(simulador.etiSCIAN))]
     return resultado
 
 
