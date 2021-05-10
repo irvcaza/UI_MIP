@@ -9,8 +9,10 @@ class Simulador_MIP():
         self.vectores_coeficientes()
         self.matrices_coeficientes_tecnicos()
         self.variables_macroeconomicas()
+        self.crea_red()
         
     def carga_datos(self,archivo_domestico, archivo_total):
+        # ToDo: Hacer cambios para hacer la improtacion mas rapida 
         datosD = pd.read_excel(archivo_domestico,skiprows=5,index_col=0)
         datosT = pd.read_excel(archivo_total,skiprows=5,index_col=0)
         
@@ -184,30 +186,53 @@ class Simulador_MIP():
             
         return [Amod,AMmod]
     
-    def crea_subred (self, sector_inicial, matriz_adyacencia, filtro=0.04):        
+    def crea_red(self):
         DG = nx.DiGraph()
-        DG.add_edges_from([(i,j) 
-                            for i, origen in enumerate(matriz_adyacencia) 
+        DG.add_edges_from([(i,j,{"domestico":self.A[i,j],"total":destino,"importaciones":self.Am[i,j]}) 
+                            for i, origen in enumerate(self.At) 
                             for j, destino in enumerate(origen) 
-                            if destino > filtro and i != j and not i in [446, 447]])
+                            if destino > 0 and i != j and not i in [446, 447]])
+        for n in DG.nodes:
+            DG.nodes[n]["etiqueta"] = self.etiSCIAN[n]
+
+        self.red = DG
         
-        
-        try:
-            SDG = DG.subgraph(nx.bfs_tree(DG,sector_inicial,True).nodes)
-        except nx.NetworkXError:
-            SDG = nx.DiGraph()
-            SDG.add_node(sector_inicial)
+    def cerradura(self, elementos,funcion_pseudoclausura, red, **arg):
+        sub_red = nx.DiGraph()
+        nodos_elementos = [(x,red.nodes[x]) for x in elementos]
+        sub_red.add_nodes_from(nodos_elementos)
+        clausura = funcion_pseudoclausura(sub_red,red,**arg)
+        while sub_red.nodes != clausura.nodes and sub_red.edges != clausura.edges:
+            sub_red = clausura
+            clausura = funcion_pseudoclausura(sub_red,red,**arg)
+        return sub_red
+
+
+    def presouclausura_atras(self,elementos,red,nivel,filtro):
+        presouclausura = elementos.copy()
+        for x in elementos.nodes:
+            for y in red.nodes :
+                if red.has_edge(y,x) and red.edges[y,x][nivel]>filtro:
+                    if not presouclausura.has_node(y):
+                        presouclausura.add_node(y,**red.nodes[y])
+                    if not presouclausura.has_edge(y,x):
+                        presouclausura.add_edge(y,x,**red.edges[y,x])
+        return presouclausura
+
+    def modifica_red(self,lista):
+        redMod = self.red.copy()
+        for elem in lista:
+            #Amod[elem[0],elem[1]] += (elem[2]/100)*self.Am[elem[0],elem[1]]
+            redMod.edges[elem[0],elem[1]]["domestico"] += (elem[2]/100)*redMod.edges[elem[0],elem[1]]["importaciones"]
+            redMod.edges[elem[0],elem[1]]["importaciones"] = redMod.edges[elem[0],elem[1]]["total"] - redMod.edges[elem[0],elem[1]]["domestico"]
             
-        for n in SDG.nodes:
-            SDG.nodes[n]["etiqueta"] = self.etiSCIAN[n]
-        
-        return SDG
+        return redMod
     
     def simula_red(self, sector_inicial, filtro=0.04, lista=[[]]):
-        red_domestica = self.crea_subred (sector_inicial, self.A, filtro)
-        red_total = self.crea_subred (sector_inicial, self.At, filtro)
-        Amod,AMmod = self.simula_adyacencia(lista)
-        red_simulada = self.crea_subred (sector_inicial, Amod, filtro)
+        red_domestica = self.cerradura([sector_inicial],self.presouclausura_atras,self.red,nivel="domestico",filtro=filtro)
+        red_total = self.cerradura([sector_inicial],self.presouclausura_atras,self.red,nivel="total",filtro=filtro)
+        inicios = [x[0] for x in lista]
+        red_simulada = self.cerradura(inicios,self.presouclausura_atras,self.modifica_red(lista),nivel="domestico",filtro=filtro)
         
         for e in red_total.edges:
             if red_domestica.has_edge(*e):
