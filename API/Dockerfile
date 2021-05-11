@@ -6,7 +6,9 @@ COPY requirements.txt ./
 #COPY packages/ ./packages
 
 COPY Cisco_Umbrella_Root_CA.cer ./
-RUN pip install --cert ./Cisco_Umbrella_Root_CA.cer  --trusted-host pypi.org -r requirements.txt
+
+RUN pip install --requirement requirements.txt || \
+    pip install --cert Cisco_Umbrella_Root_CA.cer  --trusted-host pypi.org --requirement requirements.txt 
 
 EXPOSE 80
 
